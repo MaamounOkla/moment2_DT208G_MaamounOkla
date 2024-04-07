@@ -37,12 +37,9 @@ function createTodos(todoList) {
 // Funktion för att skriva ut todo-listan till DOM.
 function printTodos(todoList) {
     var todoListEl = document.getElementById("todoList");
-    console.log(todoList);
     if (todoListEl) {
-        //Rensa befingtiliga items från DOM
         todoListEl.innerHTML = "";
         todoList.getTodos().forEach(function (todo, index) {
-            //Returnera prioritetn i ord istället för 1,2,3
             var priorityWord = "";
             switch (todo.priority) {
                 case 1:
@@ -55,30 +52,42 @@ function printTodos(todoList) {
                     priorityWord = "Oviktig";
                     break;
             }
-            console.log(todo.task, todo.priority);
-            todoListEl.innerHTML += "\n            <li class=\"list-item\">\n           <span> ".concat(todo.task, "  </span>    \n           <p> ").concat(priorityWord, "</p> \n            </li>\n            ");
-            var doneBtnEl = document.createElement("button");
-            var notDoneBtnElText = "Inte klar <i class=\"fa-solid fa-square-check\"></i>";
-            var doneBtnElText = "Klar <i class=\"fa-solid fa-square-check\"></i>";
-            if (doneBtnEl) {
-                doneBtnEl.innerHTML = notDoneBtnElText;
-                doneBtnEl.classList.add("done-button");
-                doneBtnEl.setAttribute("data-todo-index", index.toString()); // Set a custom data attribute
-                doneBtnEl.addEventListener("click", function (e) {
-                    var targetBtn = e.target;
-                    var btnIndex = parseInt(targetBtn.getAttribute("data-todo-index") || "");
-                    if (targetBtn.innerHTML === notDoneBtnElText) {
-                        targetBtn.innerHTML = doneBtnElText;
-                    }
-                    else {
-                        targetBtn.innerHTML = notDoneBtnElText;
-                    }
-                    todoList.markTodoCompleted(btnIndex);
-                    console.log(todoList.isCompleted);
+            //skriv ut data samt checka todo.isCompleted visuellt.
+            todoListEl.innerHTML += "\n              <li class=\"list-item\">\n                  <span>".concat(todo.task, "</span>    \n                  <p>").concat(priorityWord, "</p> \n                  <button class=\"done-button\" data-todo-index=\"").concat(index, "\">\n                  ").concat(todo.isCompleted
+                ? "Klar <i class='fa-solid fa-square-check'></i>"
+                : "Inte klar <i class='fa-solid fa-hourglass'></i>", "\n                 </button>\n                <button class=\"edit-button\" data-todo-index=\"").concat(index, "\">\n                Redigera <i class=\"fa-solid fa-pen-to-square\"></i></button>\n              \n                <button class=\"remove-button\" data-todo-index=\"").concat(index, "\">\n                <i class=\"fa-solid fa-trash\"></i></button>\n              </li>\n          ");
+        });
+        //doneButton
+        //Vid click, markTodoCompleted() efter index. 
+        var doneButtons = document.querySelectorAll(".done-button");
+        doneButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                var index = parseInt(button.getAttribute("data-todo-index") || "");
+                todoList.markTodoCompleted(index);
+                printTodos(todoList);
+            });
+        });
+        //Redigera en todo
+        var editButtons = document.querySelectorAll(".edit-button");
+        editButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                var index = parseInt(button.getAttribute("data-todo-index") || "");
+                var editedTodo = todoList.getTodos()[index];
+                var newEditedTodo = prompt("Redigera Uppgiften:", editedTodo.task);
+                if (newEditedTodo !== null) {
+                    todoList.editTodo(index, newEditedTodo);
                     printTodos(todoList);
-                });
-                todoListEl.appendChild(doneBtnEl);
-            }
+                }
+            });
+        });
+        //Ta bort en todo
+        var removeButtons = document.querySelectorAll(".remove-button");
+        removeButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                var index = parseInt(button.getAttribute("data-todo-index") || "");
+                todoList.removeTodo(index);
+                printTodos(todoList);
+            });
         });
     }
 }

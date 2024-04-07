@@ -6,12 +6,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TodoList = void 0;
 //Implementera Todo-klassen
 var TodoList = /** @class */ (function () {
+    /*konstuerare som initierar todos-arrayen och laddar todos från LocalStorage vid skapandet av ett nytt TodoList-objekt.*/
     function TodoList() {
         this.todos = this.loadFromLocalStorage();
     }
     TodoList.prototype.addTodo = function (task, priority) {
         // Rensa befintliga felmeddlande.
-        this.removError("");
+        this.removError();
         if (priority != 0 && task != "") {
             //skapa att göra element some är inte "completed" från början
             var newTodo = { task: task, isCompleted: false, priority: priority };
@@ -26,6 +27,7 @@ var TodoList = /** @class */ (function () {
             return false;
         }
     };
+    //Markera todo klar
     TodoList.prototype.markTodoCompleted = function (todoIndex) {
         if (todoIndex >= 0 && todoIndex < this.todos.length) {
             this.todos[todoIndex].isCompleted = true;
@@ -39,8 +41,8 @@ var TodoList = /** @class */ (function () {
             errorEl.textContent = errorMessage;
         }
     };
-    //Generera fel meddelande
-    TodoList.prototype.removError = function (errorMessage) {
+    //Radera fel meddelande
+    TodoList.prototype.removError = function () {
         var errorEl = document.getElementById("error");
         if (errorEl) {
             errorEl.textContent = "";
@@ -48,6 +50,20 @@ var TodoList = /** @class */ (function () {
     };
     TodoList.prototype.getTodos = function () {
         return this.todos;
+    };
+    //Redigera en todo
+    TodoList.prototype.editTodo = function (todoIndex, newEditedTodo) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos[todoIndex].task = newEditedTodo;
+            this.saveToLocalStorage();
+        }
+    };
+    //Radera en todo
+    TodoList.prototype.removeTodo = function (todoIndex) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos.splice(todoIndex, 1);
+            this.saveToLocalStorage();
+        }
     };
     TodoList.prototype.saveToLocalStorage = function () {
         localStorage.setItem("todos", JSON.stringify(this.todos));

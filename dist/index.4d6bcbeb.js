@@ -599,6 +599,7 @@ var errorEl = document.getElementById("error");
 // Funktion för att skriva ut befintliga todos till DOM
 window.addEventListener("load", function() {
     var todoList = new todo.TodoList();
+    printTodos(todoList);
     createTodos(todoList);
 });
 function createTodos(todoList) {
@@ -621,16 +622,57 @@ function createTodos(todoList) {
 // Funktion för att skriva ut todo-listan till DOM.
 function printTodos(todoList) {
     var todoListEl = document.getElementById("todoList");
-    console.log(todoList);
-    if (todoListEl) todoList.getTodos().forEach(function(todo, index) {
-        console.log(todo.task, todo.priority);
-        todoListEl.innerHTML += '\n            <li class="list-item">\n           <span> '.concat(todo.task, " Prioritet: ").concat(todo.priority, '</span> \n           <span><button class="done-button">Klar!</button></span>\n            </li>\n            ');
-        var doneBtnEl = document.querySelector("done-button");
-        if (doneBtnEl) doneBtnEl.addEventListener("click", function(e) {
-            e.preventDefault();
-            todoList.markTodoCompleted(index);
+    if (todoListEl) {
+        todoListEl.innerHTML = "";
+        todoList.getTodos().forEach(function(todo, index) {
+            var priorityWord = "";
+            switch(todo.priority){
+                case 1:
+                    priorityWord = "Viktig!";
+                    break;
+                case 2:
+                    priorityWord = "Medium";
+                    break;
+                case 3:
+                    priorityWord = "Oviktig";
+                    break;
+            }
+            //skriv ut data samt checka todo.isCompleted visuellt.
+            todoListEl.innerHTML += '\n              <li class="list-item">\n                  <span>'.concat(todo.task, "</span>    \n                  <p>").concat(priorityWord, '</p> \n                  <button class="done-button" data-todo-index="').concat(index, '">\n                  ').concat(todo.isCompleted ? "Klar <i class='fa-solid fa-square-check'></i>" : "Inte klar <i class='fa-solid fa-hourglass'></i>", '\n                 </button>\n                <button class="edit-button" data-todo-index="').concat(index, '">\n                Redigera <i class="fa-solid fa-pen-to-square"></i></button>\n              \n                <button class="remove-button" data-todo-index="').concat(index, '">\n                <i class="fa-solid fa-trash"></i></button>\n              </li>\n          ');
         });
-    });
+        //doneButton
+        //Vid click, markTodoCompleted() efter index. 
+        var doneButtons = document.querySelectorAll(".done-button");
+        doneButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                var index = parseInt(button.getAttribute("data-todo-index") || "");
+                todoList.markTodoCompleted(index);
+                printTodos(todoList);
+            });
+        });
+        //Redigera en todo
+        var editButtons = document.querySelectorAll(".edit-button");
+        editButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                var index = parseInt(button.getAttribute("data-todo-index") || "");
+                var editedTodo = todoList.getTodos()[index];
+                var newEditedTodo = prompt("Redigera Uppgiften:", editedTodo.task);
+                if (newEditedTodo !== null) {
+                    todoList.editTodo(index, newEditedTodo);
+                    printTodos(todoList);
+                }
+            });
+        });
+        //Ta bort en todo
+        var removeButtons = document.querySelectorAll(".remove-button");
+        removeButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                var index = parseInt(button.getAttribute("data-todo-index") || "");
+                todoList.removeTodo(index);
+                printTodos(todoList);
+            });
+        });
+    }
 }
 
 },{"26cdd8609cd76d41":"4wXiY"}],"4wXiY":[function(require,module,exports) {
@@ -643,24 +685,21 @@ Object.defineProperty(exports, "__esModule", {
 exports.TodoList = void 0;
 //Implementera Todo-klassen
 var TodoList = /** @class */ function() {
-    function TodoList() {
-        this.task = "";
-        this.isCompleted = false;
-        this.priority = 0;
+    /*konstuerare som initierar todos-arrayen och laddar todos från LocalStorage vid skapandet av ett nytt TodoList-objekt.*/ function TodoList() {
         this.todos = this.loadFromLocalStorage();
     }
     TodoList.prototype.addTodo = function(task, priority) {
         // Rensa befintliga felmeddlande.
-        this.removError("");
+        this.removError();
         if (priority != 0 && task != "") {
             //skapa att göra element some är inte "completed" från början
-            var todo = {
+            var newTodo = {
                 task: task,
                 isCompleted: false,
                 priority: priority
             };
             //Sätta in elementet i objektet
-            this.todos.push(todo);
+            this.todos.push(newTodo);
             //Spara objektet i localStorage
             this.saveToLocalStorage();
             return true;
@@ -669,6 +708,7 @@ var TodoList = /** @class */ function() {
             return false;
         }
     };
+    //Markera todo klar
     TodoList.prototype.markTodoCompleted = function(todoIndex) {
         if (todoIndex >= 0 && todoIndex < this.todos.length) {
             this.todos[todoIndex].isCompleted = true;
@@ -680,17 +720,30 @@ var TodoList = /** @class */ function() {
         var errorEl = document.getElementById("error");
         if (errorEl) errorEl.textContent = errorMessage;
     };
-    //Generera fel meddelande
-    TodoList.prototype.removError = function(errorMessage) {
+    //Radera fel meddelande
+    TodoList.prototype.removError = function() {
         var errorEl = document.getElementById("error");
         if (errorEl) errorEl.textContent = "";
     };
     TodoList.prototype.getTodos = function() {
         return this.todos;
     };
+    //Redigera en todo
+    TodoList.prototype.editTodo = function(todoIndex, newEditedTodo) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos[todoIndex].task = newEditedTodo;
+            this.saveToLocalStorage();
+        }
+    };
+    //Radera en todo
+    TodoList.prototype.removeTodo = function(todoIndex) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos.splice(todoIndex, 1);
+            this.saveToLocalStorage();
+        }
+    };
     TodoList.prototype.saveToLocalStorage = function() {
-        var savedTodos = localStorage.getItem("todos");
-        return savedTodos ? JSON.parse(savedTodos) : [];
+        localStorage.setItem("todos", JSON.stringify(this.todos));
     };
     TodoList.prototype.loadFromLocalStorage = function() {
         var savedTodos = localStorage.getItem("todos");

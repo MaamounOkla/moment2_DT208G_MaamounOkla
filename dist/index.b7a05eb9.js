@@ -634,21 +634,51 @@ function printTodos(todoList) {
                     priorityWord = "Oviktig";
                     break;
             }
+            //skriv ut data samt checka todo.isCompleted visuellt.
             todoListEl.innerHTML += `
               <li class="list-item">
                   <span>${todo.task}</span>    
                   <p>${priorityWord}</p> 
                   <button class="done-button" data-todo-index="${index}">
                   ${todo.isCompleted ? "Klar <i class='fa-solid fa-square-check'></i>" : "Inte klar <i class='fa-solid fa-hourglass'></i>"}
-              </button>
+                 </button>
+                <button class="edit-button" data-todo-index="${index}">
+                Redigera <i class="fa-solid fa-pen-to-square"></i></button>
+              
+                <button class="remove-button" data-todo-index="${index}">
+                <i class="fa-solid fa-trash"></i></button>
               </li>
           `;
         });
+        //doneButton
+        //Vid click, markTodoCompleted() efter index. 
         const doneButtons = document.querySelectorAll(".done-button");
         doneButtons.forEach((button)=>{
             button.addEventListener("click", ()=>{
                 const index = parseInt(button.getAttribute("data-todo-index") || "");
                 todoList.markTodoCompleted(index);
+                printTodos(todoList);
+            });
+        });
+        //Redigera en todo
+        const editButtons = document.querySelectorAll(".edit-button");
+        editButtons.forEach((button)=>{
+            button.addEventListener("click", ()=>{
+                const index = parseInt(button.getAttribute("data-todo-index") || "");
+                const editedTodo = todoList.getTodos()[index];
+                const newEditedTodo = prompt("Redigera Uppgiften:", editedTodo.task);
+                if (newEditedTodo !== null) {
+                    todoList.editTodo(index, newEditedTodo);
+                    printTodos(todoList);
+                }
+            });
+        });
+        //Ta bort en todo
+        const removeButtons = document.querySelectorAll(".remove-button");
+        removeButtons.forEach((button)=>{
+            button.addEventListener("click", ()=>{
+                const index = parseInt(button.getAttribute("data-todo-index") || "");
+                todoList.removeTodo(index);
                 printTodos(todoList);
             });
         });
@@ -664,7 +694,7 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TodoList", ()=>TodoList);
 "use strict";
 class TodoList {
-    constructor(){
+    /*konstuerare som initierar todos-arrayen och laddar todos från LocalStorage vid skapandet av ett nytt TodoList-objekt.*/ constructor(){
         this.todos = this.loadFromLocalStorage();
     }
     addTodo(task, priority) {
@@ -687,6 +717,7 @@ class TodoList {
             return false;
         }
     }
+    //Markera todo klar
     markTodoCompleted(todoIndex) {
         if (todoIndex >= 0 && todoIndex < this.todos.length) {
             this.todos[todoIndex].isCompleted = true;
@@ -698,13 +729,27 @@ class TodoList {
         const errorEl = document.getElementById("error");
         if (errorEl) errorEl.textContent = errorMessage;
     }
-    //Generera fel meddelande
-    removError(errorMessage) {
+    //Radera fel meddelande
+    removError() {
         const errorEl = document.getElementById("error");
         if (errorEl) errorEl.textContent = "";
     }
     getTodos() {
         return this.todos;
+    }
+    //Redigera en todo
+    editTodo(todoIndex, newEditedTodo) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos[todoIndex].task = newEditedTodo;
+            this.saveToLocalStorage();
+        }
+    }
+    //Radera en todo
+    removeTodo(todoIndex) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos.splice(todoIndex, 1);
+            this.saveToLocalStorage();
+        }
     }
     saveToLocalStorage() {
         localStorage.setItem("todos", JSON.stringify(this.todos));
