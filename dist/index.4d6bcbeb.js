@@ -601,6 +601,7 @@ window.addEventListener("load", function() {
     var todoList = new todo.TodoList();
     printTodos(todoList);
     createTodos(todoList);
+    isCompleteEventHandler(todoList);
 });
 function createTodos(todoList) {
     var todoForm = document.getElementById("todoForm");
@@ -637,18 +638,8 @@ function printTodos(todoList) {
                     priorityWord = "Oviktig";
                     break;
             }
-            //skriv ut data samt checka todo.isCompleted visuellt.
-            todoListEl.innerHTML += '\n              <li class="list-item">\n                  <span>'.concat(todo.task, "</span>    \n                  <p>").concat(priorityWord, '</p> \n                  <button class="done-button" data-todo-index="').concat(index, '">\n                  ').concat(todo.isCompleted ? "Klar <i class='fa-solid fa-square-check'></i>" : "Inte klar <i class='fa-solid fa-hourglass'></i>", '\n                 </button>\n                <button class="edit-button" data-todo-index="').concat(index, '">\n                Redigera <i class="fa-solid fa-pen-to-square"></i></button>\n              \n                <button class="remove-button" data-todo-index="').concat(index, '">\n                <i class="fa-solid fa-trash"></i></button>\n              </li>\n          ');
-        });
-        //doneButton
-        //Vid click, markTodoCompleted() efter index. 
-        var doneButtons = document.querySelectorAll(".done-button");
-        doneButtons.forEach(function(button) {
-            button.addEventListener("click", function() {
-                var index = parseInt(button.getAttribute("data-todo-index") || "");
-                todoList.markTodoCompleted(index);
-                printTodos(todoList);
-            });
+            //skriv ut data samt checka todo.isCompleted visuellt med dynamisk stil och ikon.
+            todoListEl.innerHTML += '\n              <li class="list-item">\n              <span style="text-decoration: '.concat(todo.isCompleted ? "line-through" : "none", ';">\n              ').concat(todo.task, "\n          </span>\n          \n                  <p>").concat(priorityWord, '</p> \n                  <div class="buttons">\n                  <button class="done-button" data-todo-index="').concat(index, '" style="background-color: ').concat(todo.isCompleted ? "green !important" : "red !important", '">\n                  ').concat(todo.isCompleted ? "Klar <i class='fa-solid fa-square-check'></i>" : "Inte klar <i class='fa-solid fa-hourglass'></i>", '\n              </button>\n                <button class="edit-button" data-todo-index="').concat(index, '">\n                Redigera <i class="fa-solid fa-pen-to-square"></i></button>\n              \n                <button class="remove-button" data-todo-index="').concat(index, '">\n                <i class="fa-solid fa-trash"></i></button></div>\n              </li>\n          ');
         });
         //Redigera en todo
         var editButtons = document.querySelectorAll(".edit-button");
@@ -673,6 +664,25 @@ function printTodos(todoList) {
             });
         });
     }
+}
+//Funktion för att hantera isComplete status genom att lägga till eventlyssnare till klar-knappen även efter re-rendering av nya.
+function isCompleteEventHandler(todoList) {
+    var doneButtons = document.querySelectorAll(".done-button");
+    doneButtons.forEach(function(button) {
+        button.addEventListener("click", function(event) {
+            var index = parseInt(button.getAttribute("data-todo-index") || "");
+            var todo = todoList.getTodos()[index];
+            // Toggle the completion status of the todo item
+            if (!todo.isCompleted) {
+                todoList.markTodoCompleted(index);
+                printTodos(todoList);
+            } else {
+                todoList.markTodoNotCompleted(index);
+                printTodos(todoList);
+            }
+            isCompleteEventHandler(todoList);
+        });
+    });
 }
 
 },{"26cdd8609cd76d41":"4wXiY"}],"4wXiY":[function(require,module,exports) {
@@ -712,6 +722,13 @@ var TodoList = /** @class */ function() {
     TodoList.prototype.markTodoCompleted = function(todoIndex) {
         if (todoIndex >= 0 && todoIndex < this.todos.length) {
             this.todos[todoIndex].isCompleted = true;
+            this.saveToLocalStorage();
+        }
+    };
+    //Markera todo oklar
+    TodoList.prototype.markTodoNotCompleted = function(todoIndex) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos[todoIndex].isCompleted = false;
             this.saveToLocalStorage();
         }
     };

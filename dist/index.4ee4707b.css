@@ -22,7 +22,7 @@ main {
 }
 
 .error {
-  color: #ff9d9d;
+  color: #ffa8a8;
   text-shadow: 1px 1px 10px #cb0303;
   padding: .2rem;
   font-size: 1rem;
@@ -121,7 +121,7 @@ form button:hover {
   padding: 2.5rem 4rem;
   display: flex;
   position: relative;
-  box-shadow: 0 0 10px 2px #fafafa;
+  box-shadow: inset 0 0 10px 2px #405afe;
 }
 
 .list-item span {
@@ -139,24 +139,33 @@ form button:hover {
   left: 0;
 }
 
+.buttons {
+  gap: 1rem;
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  right: 20px;
+}
+
 .done-button {
   color: #a8f5a8;
   cursor: pointer;
-  background: #027902;
   border: none;
-  border-radius: .5rem;
+  border-top-left-radius: .5rem;
+  border-top-right-radius: .5rem;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
   width: 8rem;
   padding: .5rem .8rem;
   font-weight: bold;
+  transition: all .3s;
   display: flex;
 }
 
 .done-button:hover {
   color: #d7f8d7;
-  background: #0eb11c;
+  background: #34db42;
   transition: all .3s ease-in;
 }
 
@@ -165,7 +174,8 @@ form button:hover {
   cursor: pointer;
   background: #c3f304;
   border: none;
-  border-radius: .5rem;
+  border-top-left-radius: .5rem;
+  border-top-right-radius: .5rem;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
@@ -185,7 +195,8 @@ form button:hover {
   cursor: pointer;
   background: #f20000b7;
   border: none;
-  border-radius: .5rem;
+  border-top-left-radius: .5rem;
+  border-top-right-radius: .5rem;
   justify-content: center;
   align-items: center;
   gap: 10px;
@@ -231,7 +242,25 @@ form button:hover {
     width: 90%;
     max-width: 100%;
     margin: 1rem auto;
-    padding: 3rem 2rem 1rem;
+    padding: 1rem 2rem;
+    display: flex;
+  }
+
+  .list-item span {
+    margin: 2.5rem 0;
+  }
+
+  .buttons button {
+    width: fit-content;
+    padding: .5rem;
+    font-size: .9rem;
+  }
+}
+
+@media screen and (width <= 300px) {
+  .buttons {
+    position: initial;
+    flex-direction: column;
     display: flex;
   }
 }

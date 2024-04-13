@@ -16,6 +16,8 @@ window.addEventListener("load", () => {
   const todoList = new todo.TodoList();
   printTodos(todoList);
   createTodos(todoList);
+
+  isCompleteEventHandler(todoList);
 });
 
 function createTodos(todoList: todo.TodoList) {
@@ -63,36 +65,31 @@ function printTodos(todoList: todo.TodoList): void {
           priorityWord = "Oviktig";
           break;
       }
-      //skriv ut data samt checka todo.isCompleted visuellt.
+      //skriv ut data samt checka todo.isCompleted visuellt med dynamisk stil och ikon.
       todoListEl.innerHTML += `
               <li class="list-item">
-                  <span>${todo.task}</span>    
+              <span style="text-decoration: ${todo.isCompleted ? 'line-through' : 'none'};">
+              ${todo.task}
+          </span>
+          
                   <p>${priorityWord}</p> 
-                  <button class="done-button" data-todo-index="${index}">
+                  <div class="buttons">
+                  <button class="done-button" data-todo-index="${index}" style="background-color: ${
+        todo.isCompleted ? "green !important" : "red !important"
+      }">
                   ${
                     todo.isCompleted
                       ? "Klar <i class='fa-solid fa-square-check'></i>"
                       : "Inte klar <i class='fa-solid fa-hourglass'></i>"
                   }
-                 </button>
+              </button>
                 <button class="edit-button" data-todo-index="${index}">
                 Redigera <i class="fa-solid fa-pen-to-square"></i></button>
               
                 <button class="remove-button" data-todo-index="${index}">
-                <i class="fa-solid fa-trash"></i></button>
+                <i class="fa-solid fa-trash"></i></button></div>
               </li>
           `;
-    });
-    //doneButton
-    //Vid click, markTodoCompleted() efter index.
-    const doneButtons: NodeListOf<HTMLElement> =
-      document.querySelectorAll(".done-button");
-    doneButtons.forEach((button: HTMLElement) => {
-      button.addEventListener("click", () => {
-        const index = parseInt(button.getAttribute("data-todo-index") || "");
-        todoList.markTodoCompleted(index);
-        printTodos(todoList);
-      });
     });
 
     //Redigera en todo
@@ -120,4 +117,27 @@ function printTodos(todoList: todo.TodoList): void {
       });
     });
   }
+}
+//Funktion för att hantera isComplete status genom att lägga till eventlyssnare till klar-knappen även efter re-rendering av nya.
+function isCompleteEventHandler(todoList: todo.TodoList): void {
+  const doneButtons: NodeListOf<HTMLElement> =
+    document.querySelectorAll(".done-button");
+  doneButtons.forEach((button: HTMLElement) => {
+    button.addEventListener("click", (event: Event) => {
+      const index = parseInt(button.getAttribute("data-todo-index") || "");
+      const todo = todoList.getTodos()[index];
+
+      // Toggle the completion status of the todo item
+      if (!todo.isCompleted) {
+        todoList.markTodoCompleted(index);
+
+        printTodos(todoList);
+      } else {
+        todoList.markTodoNotCompleted(index);
+
+        printTodos(todoList);
+      }
+      isCompleteEventHandler(todoList);
+    });
+  });
 }

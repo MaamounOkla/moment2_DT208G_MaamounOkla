@@ -34,6 +34,13 @@ var TodoList = /** @class */ (function () {
             this.saveToLocalStorage();
         }
     };
+    //Markera todo oklar
+    TodoList.prototype.markTodoNotCompleted = function (todoIndex) {
+        if (todoIndex >= 0 && todoIndex < this.todos.length) {
+            this.todos[todoIndex].isCompleted = false;
+            this.saveToLocalStorage();
+        }
+    };
     //Generera fel meddelande
     TodoList.prototype.displayError = function (errorMessage) {
         var errorEl = document.getElementById("error");

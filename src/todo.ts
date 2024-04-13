@@ -48,6 +48,13 @@ export class TodoList implements ITodo {
       this.saveToLocalStorage();
     }
   }
+  //Markera todo oklar
+  markTodoNotCompleted(todoIndex: number): void {
+    if (todoIndex >= 0 && todoIndex < this.todos.length) {
+      this.todos[todoIndex].isCompleted = false;
+      this.saveToLocalStorage();
+    }
+  }
 
   //Generera fel meddelande
   displayError(errorMessage: string): void {
